@@ -33,4 +33,20 @@ pub fn build(b: *std.Build) void {
         const run_step = b.step("split-file", "Run the split-file app");
         run_step.dependOn(&run_exe.step);
     }
+
+    // with-c
+    {
+        const exe = b.addExecutable(.{
+            .name = "with-c",
+            .root_source_file = b.path("with-c/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        });
+        b.installArtifact(exe);
+
+        const run_exe = b.addRunArtifact(exe);
+        const run_step = b.step("with-c", "Run the with-c app");
+        run_step.dependOn(&run_exe.step);
+    }
 }
