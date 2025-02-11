@@ -1,68 +1,37 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+const Builder = struct {
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+
+    pub fn executable(self: *const Builder, name: []const u8) anyerror!void {
+        const root_source_file = try std.fmt.allocPrint(self.b.allocator, "{s}/main.zig", .{name});
+        const exe = self.b.addExecutable(.{
+            .name = name,
+            .root_source_file = self.b.path(root_source_file),
+            .target = self.target,
+            .optimize = self.optimize,
+        });
+        self.b.installArtifact(exe);
+
+        const run_exe = self.b.addRunArtifact(exe);
+        const description = try std.fmt.allocPrint(self.b.allocator, "Run the {s} app", .{name});
+        const run_step = self.b.step(name, description);
+        run_step.dependOn(&run_exe.step);
+    }
+};
+
+pub fn build(b: *std.Build) anyerror!void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    // hello-world
-    {
-        const exe = b.addExecutable(.{
-            .name = "hello-world",
-            .root_source_file = b.path("hello-world/main.zig"),
-            .target = target,
-            .optimize = optimize,
-            .single_threaded = true,
-        });
-        b.installArtifact(exe);
+    const builder: Builder = .{
+        .b = b,
+        .target = target,
+        .optimize = optimize,
+    };
 
-        const run_exe = b.addRunArtifact(exe);
-        const run_step = b.step("hello-world", "Run the hello-world app");
-        run_step.dependOn(&run_exe.step);
-    }
-
-    // split-file
-    {
-        const exe = b.addExecutable(.{
-            .name = "split-file",
-            .root_source_file = b.path("split-file/main.zig"),
-            .target = target,
-            .optimize = optimize,
-        });
-        b.installArtifact(exe);
-
-        const run_exe = b.addRunArtifact(exe);
-        const run_step = b.step("split-file", "Run the split-file app");
-        run_step.dependOn(&run_exe.step);
-    }
-
-    // with-c
-    {
-        const exe = b.addExecutable(.{
-            .name = "with-c",
-            .root_source_file = b.path("with-c/main.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        });
-        b.installArtifact(exe);
-
-        const run_exe = b.addRunArtifact(exe);
-        const run_step = b.step("with-c", "Run the with-c app");
-        run_step.dependOn(&run_exe.step);
-    }
-
-    // tiny-ls
-    {
-        const exe = b.addExecutable(.{
-            .name = "tiny-ls",
-            .root_source_file = b.path("tiny-ls/main.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        });
-        b.installArtifact(exe);
-
-        const run_exe = b.addRunArtifact(exe);
-        const run_step = b.step("tiny-ls", "Run the tiny-ls app");
-        run_step.dependOn(&run_exe.step);
+    inline for (.{ "hello-world", "split-file", "with-c", "tiny-ls" }) |name| {
+        try builder.executable(name);
     }
 }
