@@ -49,4 +49,20 @@ pub fn build(b: *std.Build) void {
         const run_step = b.step("with-c", "Run the with-c app");
         run_step.dependOn(&run_exe.step);
     }
+
+    // tiny-ls
+    {
+        const exe = b.addExecutable(.{
+            .name = "tiny-ls",
+            .root_source_file = b.path("tiny-ls/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        });
+        b.installArtifact(exe);
+
+        const run_exe = b.addRunArtifact(exe);
+        const run_step = b.step("tiny-ls", "Run the tiny-ls app");
+        run_step.dependOn(&run_exe.step);
+    }
 }
