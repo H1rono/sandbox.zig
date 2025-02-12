@@ -44,6 +44,9 @@ pub fn main() anyerror!void {
     writeStdout(headMessage);
 
     var directory = try Directory.open(dir.ptr);
+    defer directory.close() catch |err| {
+        std.debug.print("closing directory failed: {}\n", .{err});
+    };
     while (try directory.read()) |entry| {
         const message = try std.fmt.allocPrint(allocator, "{s}\n", .{entry});
         defer allocator.free(message);

@@ -18,14 +18,13 @@ pub fn read(self: *Directory) !?[]const u8 {
     const maybeEntry: ?*c.struct_dirent = @ptrCast(c.readdir(dir));
     const entry = maybeEntry orelse {
         try e.errno();
-        try self.close();
         return null;
     };
     return entry.d_name[0..entry.d_namlen];
 }
 
-fn close(self: *Directory) !void {
-    const dir = self.dir.?;
+pub fn close(self: *Directory) !void {
+    const dir = self.dir orelse return;
     self.dir = null;
     const ret = c.closedir(dir);
     if (ret == -1) {
