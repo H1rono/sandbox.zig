@@ -195,7 +195,14 @@ pub fn main() anyerror!void {
         std.process.exit(1);
     };
 
-    const message = try std.fmt.allocPrint(allocator, "Directory: {s}\n", .{dir});
-    defer allocator.free(message);
-    writeStdout(message);
+    const headMessage = try std.fmt.allocPrint(allocator, "Directory: {s}\n", .{dir});
+    defer allocator.free(headMessage);
+    writeStdout(headMessage);
+
+    var directory = try Directory.open(dir.ptr);
+    while (try directory.read()) |entry| {
+        const message = try std.fmt.allocPrint(allocator, "{s}\n", .{entry});
+        defer allocator.free(message);
+        writeStdout(message);
+    }
 }
