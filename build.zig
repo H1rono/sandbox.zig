@@ -5,13 +5,14 @@ const Builder = struct {
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
 
-    pub fn executable(self: *const Builder, name: []const u8) anyerror!void {
+    pub fn executable(self: *const Builder, name: []const u8) !void {
         const root_source_file = try std.fmt.allocPrint(self.b.allocator, "{s}/main.zig", .{name});
         const exe = self.b.addExecutable(.{
             .name = name,
             .root_source_file = self.b.path(root_source_file),
             .target = self.target,
             .optimize = self.optimize,
+            .link_libc = true,
         });
         self.b.installArtifact(exe);
 
