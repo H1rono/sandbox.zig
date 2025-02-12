@@ -21,7 +21,7 @@ pub fn read(self: *Directory) !?[]const u8 {
         try self.close();
         return null;
     };
-    return &entry.d_name;
+    return entry.d_name[0..entry.d_namlen];
 }
 
 fn close(self: *Directory) !void {
