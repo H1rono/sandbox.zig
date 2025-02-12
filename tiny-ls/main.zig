@@ -143,6 +143,42 @@ fn writeStderr(buf: []const u8) void {
     }
 }
 
+const Directory = struct {
+    dir: ?*c.DIR,
+
+    pub fn open(path: [*]const u8) !Directory {
+        const dir = c.opendir(path);
+        if (dir == null) {
+            try errno();
+        }
+        return .{ .dir = dir };
+    }
+
+    pub fn read(self: *Directory) !?[]const u8 {
+        const dir = self.dir orelse return null;
+        const maybeEntry: ?*c.struct_dirent = @ptrCast(c.readdir(dir));
+        const entry = maybeEntry orelse {
+            try errno();
+            try self.close();
+            return null;
+        };
+        return &entry.d_name;
+    }
+
+    fn close(self: *Directory) !void {
+        const dir = self.dir.?;
+        self.dir = null;
+        const ret = c.closedir(dir);
+        if (ret == -1) {
+            try errno();
+        }
+    }
+
+    pub fn closed(self: *const Directory) bool {
+        return self.dir == null;
+    }
+};
+
 pub fn main() anyerror!void {
     var argDir: ?[]const u8 = null;
     var args = try std.process.argsWithAllocator(allocator);
