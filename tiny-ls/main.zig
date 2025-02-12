@@ -27,8 +27,8 @@ pub fn main() anyerror!void {
     var argDir: ?[]const u8 = null;
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
-    for (0..2) |i| {
-        const arg = args.next() orelse break;
+    var i: usize = 0;
+    while (args.next()) |arg| : (i += 1) {
         if (i == 1) {
             argDir = arg;
             break;
