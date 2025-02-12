@@ -98,19 +98,18 @@ pub fn fromErrno(e: std.c.E) IoError!void {
         .TXTBSY => return error.TxtBsy,
         .EXIST => return error.Exist,
         .CONNRESET => return error.ConnReset,
-        else => {
-            if (builtin.os.tag == .linux) {
-                return switch (e) {
-                    .WOULD_BLOCK => error.WouldBlock,
-                    .INTEGRITY => error.Integrity,
-                    .CAPMODE => return error.CapMode,
-                    .NOTCAPABLE => return error.NotCapable,
-                    else => error.Inval,
-                };
-            } else {
-                return error.Inval;
-            }
-        },
+        else => {},
+    }
+    if (builtin.os.tag == .linux) {
+        return switch (e) {
+            .WOULD_BLOCK => error.WouldBlock,
+            .INTEGRITY => error.Integrity,
+            .CAPMODE => error.CapMode,
+            .NOTCAPABLE => error.NotCapable,
+            else => error.Inval,
+        };
+    } else {
+        return error.Inval;
     }
 }
 
